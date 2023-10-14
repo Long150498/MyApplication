@@ -1,6 +1,5 @@
 package com.example.myapplication
 
-import android.content.ContentResolver
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -8,15 +7,11 @@ import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.core.net.toUri
 import androidx.recyclerview.widget.RecyclerView
-import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import com.example.myapplication.data.ImageEntity
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
 import java.io.File
 
 
@@ -44,8 +39,7 @@ class Adapter : RecyclerView.Adapter<Adapter.VH>() {
             val f = File(itemUri?.path)
             val bitmap = decodeSampledBitmapFromFile(itemUri.toString(),500,500)
 //            val bitmap = BitmapFactory.decodeFile(f.path)
-
-            image.setImageBitmap(bitmap)
+            image.setImageURI(f.toUri())
         }
 
         private fun decodeSampledBitmapFromFile(
@@ -110,7 +104,12 @@ class Adapter : RecyclerView.Adapter<Adapter.VH>() {
         val item = listImage?.get(position)
         val itemUri = Uri.parse(item?.uri)
         holder.itemView.setOnLongClickListener {
-            holder.itemView.context.startActivity(Intent(holder.itemView.context, DetailImageActivity::class.java).putExtra("URI", item?.uri))
+            holder.itemView.context.startActivity(
+                Intent(
+                    holder.itemView.context,
+                    DetailImageActivity::class.java
+                ).putExtra("URI", item?.uri)
+            )
             return@setOnLongClickListener true
         }
         holder.onBind(holder.itemView, itemUri)

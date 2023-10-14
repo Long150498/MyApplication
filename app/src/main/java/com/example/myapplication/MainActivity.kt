@@ -4,8 +4,6 @@ import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.database.Cursor
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -15,14 +13,9 @@ import android.view.View
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import androidx.core.net.toUri
-import androidx.core.widget.NestedScrollView
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.myapplication.data.ImageEntity
-import java.io.ByteArrayOutputStream
-import java.io.File
 
 class MainActivity : AppCompatActivity() {
 
@@ -80,7 +73,8 @@ class MainActivity : AppCompatActivity() {
                 if (visibleItemCount + firstVisibleItemPosition >= totalItemCount && firstVisibleItemPosition >= 0 && totalItemCount < loadImagesfromSDCard().size) {
                     loadMore = true
                     index += 1
-                    getList(index)
+//                    getList(index)
+//                    adapter?.notifyItemRangeChanged(totalItemCount, totalItemCount + 10)
                 }
             }
         })
@@ -109,13 +103,13 @@ class MainActivity : AppCompatActivity() {
             ArrayList()
         if (loadMore) {
             loadMore = false
-            list = chopped(listOfAllImages, 10)!!
-            if (list != null && list.size > 0) {
-                if (length < list.size) {
-                    arrayListMore.addAll(list[length])
-                    adapter?.addData(arrayListMore)
-                }
-            }
+//            list = chopped(listOfAllImages, 10)!!
+//            if (list != null && list.size > 0) {
+//                if (length < list.size) {
+//                    arrayListMore.addAll(list[length])
+            adapter?.addData(loadImagesfromSDCard())
+//                }
+//            }
         }
     }
 
