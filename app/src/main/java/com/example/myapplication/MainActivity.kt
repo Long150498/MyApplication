@@ -4,6 +4,8 @@ import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.database.Cursor
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -13,17 +15,20 @@ import android.view.View
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.core.net.toUri
 import androidx.core.widget.NestedScrollView
 import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.myapplication.data.ImageEntity
+import java.io.ByteArrayOutputStream
+import java.io.File
 
 class MainActivity : AppCompatActivity() {
 
     var rcView: RecyclerView? = null
     var adapter: Adapter? = null
     var tvNumber: TextView? = null
-    var scrollView : NestedScrollView?=null
     var index: Int = 0
     var count: Int = 0
     val listOfAllImages = ArrayList<String>()
@@ -41,37 +46,41 @@ class MainActivity : AppCompatActivity() {
         adapter?.onItemClickListener = { item, position ->
             if (item.isCheck == true) {
                 item.isCheck = false
-                count--;
+                adapter?.listImage?.forEachIndexed { index, imageEntity ->
+                    if (imageEntity.count > item.count) {
+                        imageEntity.count--
+                        adapter?.notifyItemChanged(index)
+                    }
+                }
+                adapter?.notifyItemChanged(position)
             } else {
-                item.isCheck = true
-                count++
-            }
-            if (count != 0) {
+                count = adapter?.listImage?.count { it.isCheck == true }?.plus(1) ?: 0
                 item.count = count
-                tvNumber?.text = count.toString()
-            } else
-                tvNumber?.text = ""
-            adapter?.notifyItemChanged(position)
+                item.isCheck = true
+                adapter?.notifyItemChanged(position)
+            }
         }
     }
 
     private fun initView() {
         rcView = findViewById(R.id.rcView)
         tvNumber = findViewById(R.id.tvNumber)
-        scrollView = findViewById(R.id.scrollView)
         val gridLayoutManager = GridLayoutManager(this, 3)
         rcView?.layoutManager = gridLayoutManager
         adapter = Adapter()
         rcView?.adapter = adapter
-        scrollView?.setOnScrollChangeListener(object : View.OnScrollChangeListener {
+        rcView?.setOnScrollChangeListener(object : View.OnScrollChangeListener {
             override fun onScrollChange(p0: View?, p1: Int, p2: Int, p3: Int, p4: Int) {
-                if (scrollView!!.getChildAt(0).bottom <= scrollView!!.height + scrollView!!.scrollY) {
-                    //scroll view is at bottom
+                val layoutManager = rcView?.layoutManager as LinearLayoutManager
+                val visibleItemCount = layoutManager.childCount
+                val totalItemCount = layoutManager.itemCount
+                val firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition()
+
+                // Nếu đang hiển thị tới item cuối cùng và có thêm item trong danh sách
+                if (visibleItemCount + firstVisibleItemPosition >= totalItemCount && firstVisibleItemPosition >= 0 && totalItemCount < loadImagesfromSDCard().size) {
                     loadMore = true
                     index += 1
                     getList(index)
-                } else {
-                    //scroll view is not at bottom
                 }
             }
         })
@@ -97,7 +106,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun getList(length: Int) {
         var list: ArrayList<ArrayList<String>> =
-            ArrayList<ArrayList<String>>()
+            ArrayList()
         if (loadMore) {
             loadMore = false
             list = chopped(listOfAllImages, 10)!!

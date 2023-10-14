@@ -12,13 +12,15 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import com.example.myapplication.data.ImageEntity
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
 import java.io.File
 
 
 class Adapter : RecyclerView.Adapter<Adapter.VH>() {
     var listImage: ArrayList<ImageEntity>? = null
     var onItemClickListener: ((item: ImageEntity, Int) -> Unit)? = null
-    val listSelected = mutableListOf<ImageEntity>()
     fun setListImage1(listInput: ArrayList<ImageEntity>?) {
         listImage = ArrayList()
         if (listInput != null) {
@@ -30,13 +32,10 @@ class Adapter : RecyclerView.Adapter<Adapter.VH>() {
     class VH(val view: View) : RecyclerView.ViewHolder(view) {
 
         val image: ImageView by lazy {
-            view.findViewById<ImageView>(R.id.image)
+            view.findViewById(R.id.image)
         }
         val tvNum: TextView by lazy {
-            view.findViewById<TextView>(R.id.tvNum)
-        }
-        private val layoutRoot: FrameLayout by lazy {
-            view.findViewById<FrameLayout>(R.id.llRoot)
+            view.findViewById(R.id.tvNum)
         }
 
         fun onBind(context: View, itemUri: Uri?) {
@@ -120,10 +119,6 @@ class Adapter : RecyclerView.Adapter<Adapter.VH>() {
                 onItemClickListener?.invoke(item, position)
             }
         }
-    }
-
-    public fun getItemSelected(): Int {
-        return listSelected.size + 1
     }
 
     override fun onViewRecycled(holder: VH) {
