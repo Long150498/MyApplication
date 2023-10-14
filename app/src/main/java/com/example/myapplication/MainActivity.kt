@@ -3,9 +3,13 @@ package com.example.myapplication
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.database.Cursor
+import android.net.Uri
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.provider.MediaStore
+import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.recyclerview.widget.RecyclerView
 
@@ -42,10 +46,11 @@ class MainActivity : AppCompatActivity() {
                     ), 1
                 )
             } else {
-                startActivityForResult(
-                    Intent.createChooser(intent, "Select Picture"),
-                    1
-                )
+//                startActivityForResult(
+//                    Intent.createChooser(intent, "Select Picture"),
+//                    1
+//                )
+                loadImagesfromSDCard()
             }
         } else {
             if (ActivityCompat.checkSelfPermission(
@@ -58,10 +63,7 @@ class MainActivity : AppCompatActivity() {
                     1
                 )
             } else {
-                startActivityForResult(
-                    Intent.createChooser(intent, "Select Picture"),
-                    1
-                )
+                loadImagesfromSDCard()
             }
         }
     }
@@ -69,5 +71,26 @@ class MainActivity : AppCompatActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
+    }
+
+    fun loadImagesfromSDCard(): ArrayList<String> {
+        val uri: Uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+        val cursor: Cursor?
+        val column_index_folder_name: Int
+        val listOfAllImages = ArrayList<String>()
+        var absolutePathOfImage: String? = null
+
+        val projection = arrayOf(MediaStore.MediaColumns.DATA, MediaStore.Images.Media.BUCKET_DISPLAY_NAME)
+
+        cursor = this.contentResolver.query(uri, projection, null, null, null)
+
+        val column_index_data: Int? = cursor?.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA)
+//        column_index_folder_name = cursor?.getColumnIndexOrThrow(MediaStore.Images.Media.BUCKET_DISPLAY_NAME)
+        while (cursor?.moveToNext() == true) {
+            absolutePathOfImage = cursor.getString(column_index_data ?: 0)
+            listOfAllImages.add(absolutePathOfImage)
+        }
+        Log.e("TAG", "loadImagesfromSDCard: "+listOfAllImages )
+        return listOfAllImages
     }
 }
