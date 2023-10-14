@@ -41,7 +41,7 @@ class Adapter : RecyclerView.Adapter<Adapter.VH>() {
 
         fun onBind(stream: ByteArrayOutputStream, itemUri: Uri?) {
             val f = File(itemUri?.path)
-            val bitmap = BitmapFactory.decodeFile(f.path).scale(50,50,true)
+            val bitmap = BitmapFactory.decodeFile(f.path).scale(100,100,true)
             bitmap.compress(Bitmap.CompressFormat.JPEG,1,stream)
             image.setImageBitmap(bitmap)
         }
