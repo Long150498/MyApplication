@@ -13,7 +13,7 @@ import android.view.View
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.core.widget.NestedScrollView
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.myapplication.data.ImageEntity
@@ -23,7 +23,12 @@ class MainActivity : AppCompatActivity() {
     var rcView: RecyclerView? = null
     var adapter: Adapter? = null
     var tvNumber: TextView? = null
+    var scrollView : NestedScrollView?=null
+    var index: Int = 0
     var count: Int = 0
+    val listOfAllImages = ArrayList<String>()
+    val arrayListMore = ArrayList<String>()
+    private var loadMore = false
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -44,7 +49,7 @@ class MainActivity : AppCompatActivity() {
             if (count != 0) {
                 item.count = count
                 tvNumber?.text = count.toString()
-            }else
+            } else
                 tvNumber?.text = ""
             adapter?.notifyItemChanged(position)
         }
@@ -53,28 +58,56 @@ class MainActivity : AppCompatActivity() {
     private fun initView() {
         rcView = findViewById(R.id.rcView)
         tvNumber = findViewById(R.id.tvNumber)
+        scrollView = findViewById(R.id.scrollView)
         val gridLayoutManager = GridLayoutManager(this, 3)
         rcView?.layoutManager = gridLayoutManager
         adapter = Adapter()
         rcView?.adapter = adapter
-        rcView?.setOnScrollChangeListener(object : View.OnScrollChangeListener {
+        scrollView?.setOnScrollChangeListener(object : View.OnScrollChangeListener {
             override fun onScrollChange(p0: View?, p1: Int, p2: Int, p3: Int, p4: Int) {
-//                val layoutManager = rcView?.layoutManager as LinearLayoutManager
-//                val visibleItemCount = layoutManager.childCount
-//                val totalItemCount = layoutManager.itemCount
-//                val firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition()
-//
-//                // Nếu đang hiển thị tới item cuối cùng và có thêm item trong danh sách
-//                if (visibleItemCount + firstVisibleItemPosition >= totalItemCount && firstVisibleItemPosition >= 0 && totalItemCount < loadImagesfromSDCard().size) {
-//                    val newItems = loadImagesfromSDCard().subList(
-//                        totalItemCount,
-//                        totalItemCount + 10
-//                    ) // Load thêm 10 item tiếp theo
-//                    adapter?.setListImage1(newItems)
-//                    adapter?.notifyItemRangeChanged(totalItemCount, totalItemCount + 10)
-//                }
+                if (scrollView!!.getChildAt(0).bottom <= scrollView!!.height + scrollView!!.scrollY) {
+                    //scroll view is at bottom
+                    loadMore = true
+                    index += 1
+                    getList(index)
+                } else {
+                    //scroll view is not at bottom
+                }
             }
         })
+    }
+
+    private fun  chopped(
+        list: ArrayList<String>,
+        lengthInPage: Int
+    ): ArrayList<ArrayList<String>>? {
+        val parts = ArrayList<ArrayList<String>>()
+        val N = list.size
+        var i = 0
+        while (i < N) {
+            parts.add(
+                ArrayList(
+                    list.subList(i, Math.min(N, i + lengthInPage))
+                )
+            )
+            i += lengthInPage
+        }
+        return parts
+    }
+
+    private fun getList(length: Int) {
+        var list: ArrayList<ArrayList<String>> =
+            ArrayList<ArrayList<String>>()
+        if (loadMore) {
+            loadMore = false
+            list = chopped(listOfAllImages, 10)!!
+            if (list != null && list.size > 0) {
+                if (length < list.size) {
+                    arrayListMore.addAll(list[length])
+                    adapter?.addData(arrayListMore)
+                }
+            }
+        }
     }
 
     private fun openGallery() {
@@ -96,16 +129,9 @@ class MainActivity : AppCompatActivity() {
                     ), 1
                 )
             } else {
-                var imageEntity = loadImagesfromSDCard()
-                var listImage = ArrayList<ImageEntity>()
-                for (image in imageEntity) {
-                    val item = ImageEntity()
-                    item.uri = image
-                    listImage.add(item)
-                }
-                adapter?.setListImage1(
-                    listImage
-                )
+                loadMore = true;
+                loadImagesfromSDCard()
+                getList(index)
             }
         } else {
             if (ActivityCompat.checkSelfPermission(
@@ -118,16 +144,19 @@ class MainActivity : AppCompatActivity() {
                     1
                 )
             } else {
-                var imageEntity = loadImagesfromSDCard()
-                var listImage = ArrayList<ImageEntity>()
-                for (image in imageEntity) {
-                    val item = ImageEntity()
-                    item.uri = image
-                    listImage.add(item)
-                }
-                adapter?.setListImage1(
-                    listImage
-                )
+//                var imageEntity = loadImagesfromSDCard()
+//                var listImage = ArrayList<ImageEntity>()
+//                for (image in imageEntity) {
+//                    val item = ImageEntity()
+//                    item.uri = image
+//                    listImage.add(item)
+//                }
+//                adapter?.setListImage1(
+//                    listImage
+//                )
+                loadMore = true;
+                loadImagesfromSDCard()
+                getList(index)
             }
         }
     }
@@ -141,7 +170,6 @@ class MainActivity : AppCompatActivity() {
         val uri: Uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
         val cursor: Cursor?
         val column_index_folder_name: Int
-        val listOfAllImages = ArrayList<String>()
         var absolutePathOfImage: String? = null
 
         val projection =

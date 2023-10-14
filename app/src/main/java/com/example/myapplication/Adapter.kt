@@ -1,6 +1,5 @@
 package com.example.myapplication
 
-import android.content.ContentResolver
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
@@ -11,6 +10,7 @@ import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import com.example.myapplication.data.ImageEntity
 import java.io.File
 
@@ -29,7 +29,7 @@ class Adapter : RecyclerView.Adapter<Adapter.VH>() {
 
     class VH(val view: View) : RecyclerView.ViewHolder(view) {
 
-        private val image: ImageView by lazy {
+        val image: ImageView by lazy {
             view.findViewById<ImageView>(R.id.image)
         }
         val tvNum: TextView by lazy {
@@ -41,8 +41,46 @@ class Adapter : RecyclerView.Adapter<Adapter.VH>() {
 
         fun onBind(context: View, itemUri: Uri?) {
             val f = File(itemUri?.path)
-            val bitmap = BitmapFactory.decodeFile(f.path)
+            val bitmap = decodeSampledBitmapFromFile(itemUri.toString(),500,500)
+//            val bitmap = BitmapFactory.decodeFile(f.path)
+
             image.setImageBitmap(bitmap)
+        }
+
+        private fun decodeSampledBitmapFromFile(
+            filePath: String,
+            reqWidth: Int,
+            reqHeight: Int
+        ): Bitmap {
+            val options = BitmapFactory.Options()
+            options.inJustDecodeBounds = true
+            BitmapFactory.decodeFile(filePath, options)
+
+            options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight)
+
+            options.inJustDecodeBounds = false
+            return BitmapFactory.decodeFile(filePath, options)
+        }
+
+        private fun calculateInSampleSize(
+            options: BitmapFactory.Options,
+            reqWidth: Int,
+            reqHeight: Int
+        ): Int {
+            val height = options.outHeight
+            val width = options.outWidth
+            var inSampleSize = 1
+
+            if (height > reqHeight || width > reqWidth) {
+                val halfHeight = height / 2
+                val halfWidth = width / 2
+
+                while ((halfHeight / inSampleSize) >= reqHeight && (halfWidth / inSampleSize) >= reqWidth) {
+                    inSampleSize *= 2
+                }
+            }
+
+            return inSampleSize
         }
     }
 
@@ -52,6 +90,19 @@ class Adapter : RecyclerView.Adapter<Adapter.VH>() {
 
     override fun getItemCount(): Int {
         return listImage?.size ?: 0
+    }
+
+    fun addData(mList: ArrayList<String>) {
+        val dataFinish = ArrayList<ImageEntity>()
+        if (mList != null) {
+            for (item in mList) {
+                var data = ImageEntity()
+                data.uri = item
+                dataFinish.add(data)
+            }
+            this.listImage = dataFinish
+            notifyDataSetChanged()
+        }
     }
 
     override fun onBindViewHolder(holder: VH, position: Int) {
@@ -73,5 +124,10 @@ class Adapter : RecyclerView.Adapter<Adapter.VH>() {
 
     public fun getItemSelected(): Int {
         return listSelected.size + 1
+    }
+
+    override fun onViewRecycled(holder: VH) {
+        super.onViewRecycled(holder)
+        holder.image.setImageBitmap(null)
     }
 }
