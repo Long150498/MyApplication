@@ -5,16 +5,18 @@ import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import java.io.File
+import androidx.appcompat.widget.AppCompatImageView
 
 class DetailImageActivity : AppCompatActivity() {
     var image: TouchImageView? = null
+    var back: AppCompatImageView? = null
     private lateinit var uri: Uri
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_detail_image)
         initViews()
+        initAction()
     }
 
     private fun initViews() {
@@ -22,8 +24,15 @@ class DetailImageActivity : AppCompatActivity() {
             uri = Uri.parse(intent.getStringExtra("URI"))
         }
         image = findViewById<TouchImageView>(R.id.ivDetail)
-        val bitmap = decodeSampledBitmapFromFile(uri.toString(),500,500)
+        back = findViewById<TouchImageView>(R.id.ivBack)
+        val bitmap = decodeSampledBitmapFromFile(uri.toString(), 500, 500)
         image?.setImageBitmap(bitmap)
+    }
+
+    private fun initAction() {
+        back?.setOnClickListener {
+            finish()
+        }
     }
 
     private fun decodeSampledBitmapFromFile(
