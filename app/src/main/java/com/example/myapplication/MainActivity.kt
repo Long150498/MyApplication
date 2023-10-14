@@ -80,24 +80,6 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
-    private fun  chopped(
-        list: ArrayList<String>,
-        lengthInPage: Int
-    ): ArrayList<ArrayList<String>>? {
-        val parts = ArrayList<ArrayList<String>>()
-        val N = list.size
-        var i = 0
-        while (i < N) {
-            parts.add(
-                ArrayList(
-                    list.subList(i, Math.min(N, i + lengthInPage))
-                )
-            )
-            i += lengthInPage
-        }
-        return parts
-    }
-
     private fun getList(length: Int) {
         var list: ArrayList<ArrayList<String>> =
             ArrayList()
@@ -147,16 +129,6 @@ class MainActivity : AppCompatActivity() {
                     1
                 )
             } else {
-//                var imageEntity = loadImagesfromSDCard()
-//                var listImage = ArrayList<ImageEntity>()
-//                for (image in imageEntity) {
-//                    val item = ImageEntity()
-//                    item.uri = image
-//                    listImage.add(item)
-//                }
-//                adapter?.setListImage1(
-//                    listImage
-//                )
                 loadMore = true;
                 loadImagesfromSDCard()
                 getList(index)
@@ -172,7 +144,6 @@ class MainActivity : AppCompatActivity() {
     fun loadImagesfromSDCard(): ArrayList<String> {
         val uri: Uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
         val cursor: Cursor?
-        val column_index_folder_name: Int
         var absolutePathOfImage: String? = null
 
         val projection =
