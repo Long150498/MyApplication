@@ -1,7 +1,7 @@
 package com.example.myapplication
 
 import android.content.ContentResolver
-import android.content.Context
+import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
@@ -58,6 +58,10 @@ class Adapter : RecyclerView.Adapter<Adapter.VH>() {
     override fun onBindViewHolder(holder: VH, position: Int) {
         val item = listImage?.get(position)
         val itemUri = Uri.parse(item)
+        holder.itemView.setOnLongClickListener {
+            holder.itemView.context.startActivity(Intent(holder.itemView.context, DetailImageActivity::class.java).putExtra("URI", item))
+            return@setOnLongClickListener true
+        }
         holder.onBind(holder.itemView, itemUri)
     }
 }
