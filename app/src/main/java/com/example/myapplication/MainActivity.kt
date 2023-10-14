@@ -14,7 +14,7 @@ import androidx.core.app.ActivityCompat
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.async
 
 class MainActivity : AppCompatActivity() {
 
@@ -56,7 +56,9 @@ class MainActivity : AppCompatActivity() {
 //                    Intent.createChooser(intent, "Select Picture"),
 //                    1
 //                )
-                loadImagesfromSDCard()
+                adapter?.setListImage1(
+                    loadImagesfromSDCard()
+                )
             }
         } else {
             if (ActivityCompat.checkSelfPermission(
@@ -69,7 +71,7 @@ class MainActivity : AppCompatActivity() {
                     1
                 )
             } else {
-                loadImagesfromSDCard()
+                adapter?.setListImage1(loadImagesfromSDCard())
             }
         }
     }
@@ -86,20 +88,18 @@ class MainActivity : AppCompatActivity() {
         val listOfAllImages = ArrayList<String>()
         var absolutePathOfImage: String? = null
 
-        val projection = arrayOf(MediaStore.MediaColumns.DATA, MediaStore.Images.Media.BUCKET_DISPLAY_NAME)
+        val projection =
+            arrayOf(MediaStore.MediaColumns.DATA, MediaStore.Images.Media.BUCKET_DISPLAY_NAME)
 
         cursor = this.contentResolver.query(uri, projection, null, null, null)
 
         val column_index_data: Int? = cursor?.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA)
 //        column_index_folder_name = cursor?.getColumnIndexOrThrow(MediaStore.Images.Media.BUCKET_DISPLAY_NAME)
-        while (cursor?.moveToNext() == true) {
+        while (cursor?.moveToNext() == true && listOfAllImages.size < 10) {
             absolutePathOfImage = cursor.getString(column_index_data ?: 0)
             listOfAllImages.add(absolutePathOfImage)
         }
         Log.e("TAG", "loadImagesfromSDCard: " + listOfAllImages)
-        GlobalScope.launch(Dispatchers.IO) {
-            adapter?.setListImage1(listOfAllImages)
-        }
         return listOfAllImages
     }
 }
