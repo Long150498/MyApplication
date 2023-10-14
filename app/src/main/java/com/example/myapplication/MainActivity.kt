@@ -6,25 +6,31 @@ import android.content.pm.PackageManager
 import android.database.Cursor
 import android.net.Uri
 import android.os.Build
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.recyclerview.widget.RecyclerView
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
     var rcView: RecyclerView? = null
+    var adapter: Adapter? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        openGallery()
         initView()
+        openGallery()
     }
 
     private fun initView() {
         rcView = findViewById(R.id.rcView)
+        adapter = Adapter()
+        rcView?.adapter = adapter
     }
 
     private fun openGallery() {
@@ -90,7 +96,10 @@ class MainActivity : AppCompatActivity() {
             absolutePathOfImage = cursor.getString(column_index_data ?: 0)
             listOfAllImages.add(absolutePathOfImage)
         }
-        Log.e("TAG", "loadImagesfromSDCard: "+listOfAllImages )
+        Log.e("TAG", "loadImagesfromSDCard: " + listOfAllImages)
+        GlobalScope.launch(Dispatchers.IO) {
+            adapter?.setListImage1(listOfAllImages)
+        }
         return listOfAllImages
     }
 }
