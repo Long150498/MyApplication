@@ -9,9 +9,11 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log
+import android.view.View
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.myapplication.data.ImageEntity
@@ -55,6 +57,24 @@ class MainActivity : AppCompatActivity() {
         rcView?.layoutManager = gridLayoutManager
         adapter = Adapter()
         rcView?.adapter = adapter
+        rcView?.setOnScrollChangeListener(object : View.OnScrollChangeListener {
+            override fun onScrollChange(p0: View?, p1: Int, p2: Int, p3: Int, p4: Int) {
+//                val layoutManager = rcView?.layoutManager as LinearLayoutManager
+//                val visibleItemCount = layoutManager.childCount
+//                val totalItemCount = layoutManager.itemCount
+//                val firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition()
+//
+//                // Nếu đang hiển thị tới item cuối cùng và có thêm item trong danh sách
+//                if (visibleItemCount + firstVisibleItemPosition >= totalItemCount && firstVisibleItemPosition >= 0 && totalItemCount < loadImagesfromSDCard().size) {
+//                    val newItems = loadImagesfromSDCard().subList(
+//                        totalItemCount,
+//                        totalItemCount + 10
+//                    ) // Load thêm 10 item tiếp theo
+//                    adapter?.setListImage1(newItems)
+//                    adapter?.notifyItemRangeChanged(totalItemCount, totalItemCount + 10)
+//                }
+            }
+        })
     }
 
     private fun openGallery() {
@@ -130,7 +150,8 @@ class MainActivity : AppCompatActivity() {
         cursor = this.contentResolver.query(uri, projection, null, null, null)
 
         val column_index_data: Int? = cursor?.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA)
-        while (cursor?.moveToNext() == true && listOfAllImages.size < 10) {
+//        column_index_folder_name = cursor?.getColumnIndexOrThrow(MediaStore.Images.Media.BUCKET_DISPLAY_NAME)
+        while (cursor?.moveToNext() == true) {
             absolutePathOfImage = cursor.getString(column_index_data ?: 0)
             listOfAllImages.add(absolutePathOfImage)
         }

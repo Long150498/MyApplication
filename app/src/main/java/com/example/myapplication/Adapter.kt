@@ -39,21 +39,9 @@ class Adapter : RecyclerView.Adapter<Adapter.VH>() {
             view.findViewById<FrameLayout>(R.id.llRoot)
         }
 
-        fun uriToBitmap(uri: Uri, contentResolver: ContentResolver): Bitmap? {
-            return try {
-                val inputStream = contentResolver.openInputStream(uri)
-                BitmapFactory.decodeStream(inputStream)
-            } catch (e: Exception) {
-                e.printStackTrace()
-                null
-            }
-        }
-
         fun onBind(context: View, itemUri: Uri?) {
             val f = File(itemUri?.path)
-            val bmOptions = BitmapFactory.Options()
-            var bitmap = BitmapFactory.decodeFile(f.path, bmOptions)
-            bitmap = Bitmap.createScaledBitmap(bitmap!!, 100, 100, true)
+            val bitmap = BitmapFactory.decodeFile(f.path)
             image.setImageBitmap(bitmap)
         }
     }
